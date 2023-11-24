@@ -19,18 +19,9 @@ int _getline(char *line, FILE *fp)
     return (0);
 }
 
-void add_one(char *str)
-{
-    int i;
-
-    for (i = 0; str[i + 1] != '\0';)
-        i++;
-    str[i] = str[i] < 9 + '0' ? str[i] + 1 : 0;
-}
-
 void print_factors(char *str)
 {
-    char factor1[1024], factor2[1024], rem[1024];
+    char *str_quotient, *str_divisor, *str_reminder;
     mpz_t dividend, divisor, quotient, reminder, step;
     mpz_init(dividend);
     mpz_init(divisor);
@@ -42,21 +33,34 @@ void print_factors(char *str)
     mpz_set_str(divisor, "2", 10);
     mpz_set_str(step, "1", 10);
     mpz_tdiv_qr(quotient, reminder, dividend, divisor);
-    if (strcmp(mpz_get_str(NULL, 10, reminder), "0") == 0)
+    str_reminder = mpz_get_str(NULL, 10, reminder);
+    if (strcmp(str_reminder, "0") == 0)
     {
-        printf("%s=%s*%s\n", str, mpz_get_str(NULL, 10, quotient), mpz_get_str(NULL, 10, divisor));
+        free(str_reminder);
+        str_quotient = mpz_get_str(NULL, 10, quotient);
+        str_divisor = mpz_get_str(NULL, 10, divisor);
+        printf("%s=%s*%s\n", str, str_quotient, str_divisor);
+        free(str_divisor), free(str_quotient);
         mpz_clear(dividend), mpz_clear(divisor), mpz_clear(quotient), mpz_clear(reminder), mpz_clear(step);
         return;
     }
+    free(str_reminder);
     mpz_add(divisor, divisor, step);
     mpz_set_str(step, "2", 10);
     mpz_tdiv_qr(quotient, reminder, dividend, divisor);
-    while (strcmp(mpz_get_str(NULL, 10, reminder), "0") != 0)
+    str_reminder = mpz_get_str(NULL, 10, reminder);
+    while (strcmp(str_reminder, "0") != 0)
     {
+        free(str_reminder);
         mpz_add(divisor, divisor, step);
         mpz_tdiv_qr(quotient, reminder, dividend, divisor);
+        str_reminder = mpz_get_str(NULL, 10, reminder);
     }
-    printf("%s=%s*%s\n", str, mpz_get_str(NULL, 10, quotient), mpz_get_str(NULL, 10, divisor));
+    free(str_reminder);
+    str_quotient = mpz_get_str(NULL, 10, quotient);
+    str_divisor = mpz_get_str(NULL, 10, divisor);
+    printf("%s=%s*%s\n", str, str_quotient, str_divisor);
+    free(str_divisor), free(str_quotient);
     mpz_clear(dividend), mpz_clear(divisor), mpz_clear(quotient), mpz_clear(reminder), mpz_clear(step);
 }
 
@@ -72,5 +76,6 @@ int main(int argc, char const *argv[])
     {
         print_factors(buff);
     }
+    fclose(fp);
     return 0;
 }
